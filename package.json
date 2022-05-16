@@ -1,0 +1,8 @@
+{
+  "name": "node-typescript-api",
+  "version": "1.0.0",
+  "description": "Typescript NodeJs API",
+  "main": "index.js",
+  "author": "Jeovane Araujo <jeovanearaujo16@gmail.com>",
+  "license": "MIT"
+}
