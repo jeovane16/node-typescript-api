@@ -29,6 +29,7 @@
     "@typescript-eslint/parser": "^5.24.0",
     "eslint": "^8.15.0",
     "jest": "^28.1.0",
+    "nock": "^13.2.7",
     "prettier": "^2.6.2",
     "supertest": "^6.2.3",
     "ts-jest": "^28.0.2",
