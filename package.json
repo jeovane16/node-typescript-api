@@ -13,9 +13,9 @@
     "start": "yarn build && node dist/src/index.js",
     "dev": "ts-node-dev 'src/index.ts'",
     "lint": "eslint ./src ./test --ext .ts",
-    "style-check": "prettier --check 'src/**/*.ts' 'test/**/*.ts'",
-    "style-fix": "prettier --write 'src/**/*.ts' 'test/**/*.ts'",
-    "lint-fix": "eslint ./src ./test --ext .ts --fix"
+    "style:check": "prettier --check 'src/**/*.ts' 'test/**/*.ts'",
+    "style:fix": "prettier --write 'src/**/*.ts' 'test/**/*.ts'",
+    "lint:fix": "eslint ./src ./test --ext .ts --fix"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
