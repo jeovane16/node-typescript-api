@@ -6,17 +6,27 @@
   "author": "Jeovane Araujo <jeovanearaujo16@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "test": "yarn test:functional && yarn test:unit",
-    "test:functional": "jest --projects ./test --runInBand",
-    "test:unit": "jest",
+    "test": "yarn lint && yarn style:check && yarn test:unit && yarn test:functional",
+    "test:functional": "dotenv -e .env -- jest --projects ./test --runInBand",
+    "test:unit": "dotenv -e .env -- jest",
     "build": "tsc",
     "start": "yarn build && node dist/src/index.js",
+    "start:local": "dotenv -e .env -- ts-node-dev --transpile-only src/index.ts",
     "dev": "ts-node-dev 'src/index.ts'",
     "lint": "eslint ./src ./test --ext .ts",
     "style:check": "prettier --check 'src/**/*.ts' 'test/**/*.ts'",
     "style:fix": "prettier --write 'src/**/*.ts' 'test/**/*.ts'",
     "lint:fix": "eslint ./src ./test --ext .ts --fix"
   },
+  "engines": {
+    "node": ">=16"
+  },
+  "keywords": [
+    "node",
+    "nodejs",
+    "typescript",
+    "api"
+  ],
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
     "@types/body-parser": "^1.19.2",
@@ -29,6 +39,7 @@
     "@types/supertest": "^2.0.12",
     "@typescript-eslint/eslint-plugin": "^5.24.0",
     "@typescript-eslint/parser": "^5.24.0",
+    "dotenv-cli": "^6.0.0",
     "eslint": "^8.15.0",
     "jest": "^28.1.0",
     "nock": "^13.2.7",
