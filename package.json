@@ -19,7 +19,7 @@
     "lint:fix": "eslint ./src ./test --ext .ts --fix"
   },
   "engines": {
-    "node": ">=16"
+    "node": "16"
   },
   "keywords": [
     "node",
