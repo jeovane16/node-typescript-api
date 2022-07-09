@@ -1,4 +1,4 @@
-import mongoose, { Document, Model } from 'mongoose';
+import mongoose, { Document } from 'mongoose';
 import AuthService from '@src/services/auth';
 
 export interface User {
@@ -56,4 +56,4 @@ schema.pre<UserModel>('save', async function (): Promise<void> {
   }
 });
 
-export const User: Model<UserModel> = mongoose.model('User', schema);
+export const User = mongoose.model('User', schema);
