@@ -279,7 +279,7 @@
         "type": "number",
         "example": -10.55
       },
-      "id":{
+      "id": {
         "type": "string",
         "example": "5e8131eba7768d9e4f06c884"
       },
@@ -334,9 +334,9 @@
         "required": ["name", "lat", "lng", "position"]
       },
       "TimeForecast": {
-        "type":"array",
+        "type": "array",
         "items": {
-          "type":"object",
+          "type": "object",
           "properties": {
             "time": {
               "type": "string",
