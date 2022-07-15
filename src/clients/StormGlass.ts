@@ -2,13 +2,15 @@ import { InternalError } from '@src/utils/errors/internal-error';
 import config, { IConfig } from 'config';
 import * as HTTPUtil from '@src/utils/request';
 import { TimeUtil } from '@src/utils/time';
+import CacheUtil from '@src/utils/cache';
+import logger from '@src/logger';
 
 export interface StormGlassPointSource {
   [key: string]: number;
 }
 
 export interface StormGlassPoint {
-  readonly time: string;
+  time: string;
   readonly waveHeight: StormGlassPointSource;
   readonly waveDirection: StormGlassPointSource;
   readonly swellDirection: StormGlassPointSource;
@@ -33,6 +35,12 @@ export interface ForecastPoint {
   windSpeed: number;
 }
 
+export class StormGlassUnexpectedResponseError extends InternalError {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
 export class ClientRequestError extends InternalError {
   constructor(message: string) {
     const internalMessage =
@@ -49,7 +57,7 @@ export class StormGlassResponseError extends InternalError {
   }
 }
 
-const stormGlassResourceConfig: IConfig = config.get(
+const stormglassResourceConfig: IConfig = config.get(
   'App.resources.StormGlass'
 );
 
@@ -57,20 +65,44 @@ export class StormGlass {
   readonly stormGlassAPIParams =
     'swellDirection,swellHeight,swellPeriod,waveDirection,waveHeight,windDirection,windSpeed';
   readonly stormGlassAPISource = 'noaa';
-  constructor(protected request = new HTTPUtil.Request()) {}
+
+  constructor(
+    protected request = new HTTPUtil.Request(),
+    protected cacheUtil = CacheUtil
+  ) {}
 
   public async fetchPoints(lat: number, lng: number): Promise<ForecastPoint[]> {
+    const cachedForecastPoints = this.getForecastPointsFromCache(
+      StormGlass.getCacheKey(lat, lng)
+    );
+
+    if (!cachedForecastPoints) {
+      const forecastPoints = await this.getForecastPointsFromApi(lat, lng);
+      this.setForecastPointsInCache(
+        StormGlass.getCacheKey(lat, lng),
+        forecastPoints
+      );
+      return forecastPoints;
+    }
+
+    return cachedForecastPoints;
+  }
+
+  protected async getForecastPointsFromApi(
+    lat: number,
+    lng: number
+  ): Promise<ForecastPoint[]> {
     const endTimestamp = TimeUtil.getUnixTimeForAFutureDay(1);
     try {
       const response = await this.request.get<StormGlassForecastResponse>(
-        `${stormGlassResourceConfig.get(
+        `${stormglassResourceConfig.get(
           'apiUrl'
         )}/weather/point?lat=${lat}&lng=${lng}&params=${
           this.stormGlassAPIParams
         }&source=${this.stormGlassAPISource}&end=${endTimestamp}`,
         {
           headers: {
-            Authorization: stormGlassResourceConfig.get('apiToken'),
+            Authorization: stormglassResourceConfig.get('apiToken'),
           },
         }
       );
@@ -84,6 +116,35 @@ export class StormGlass {
       }
       throw new ClientRequestError(JSON.stringify(err));
     }
+  }
+
+  protected getForecastPointsFromCache(
+    key: string
+  ): ForecastPoint[] | undefined {
+    const forecastPointsFromCache = this.cacheUtil.get<ForecastPoint[]>(key);
+
+    if (!forecastPointsFromCache) {
+      return;
+    }
+
+    logger.info(`Using cache to return forecast points for key: ${key}`);
+    return forecastPointsFromCache;
+  }
+
+  private static getCacheKey(lat: number, lng: number): string {
+    return `forecast_points_${lat}_${lng}`;
+  }
+
+  private setForecastPointsInCache(
+    key: string,
+    forecastPoints: ForecastPoint[]
+  ): boolean {
+    logger.info(`Updating cache to return forecast points for key: ${key}`);
+    return this.cacheUtil.set(
+      key,
+      forecastPoints,
+      stormglassResourceConfig.get('cacheTtl')
+    );
   }
 
   private normalizeResponse(
@@ -109,8 +170,8 @@ export class StormGlass {
       point.swellPeriod?.[this.stormGlassAPISource] &&
       point.waveDirection?.[this.stormGlassAPISource] &&
       point.waveHeight?.[this.stormGlassAPISource] &&
-      point.windSpeed?.[this.stormGlassAPISource] &&
-      point.windDirection?.[this.stormGlassAPISource]
+      point.windDirection?.[this.stormGlassAPISource] &&
+      point.windSpeed?.[this.stormGlassAPISource]
     );
   }
 }
