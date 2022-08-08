@@ -14,6 +14,7 @@ import logger from '@src/logger';
 import expressPino from 'express-pino-logger';
 import cors from 'cors';
 import { apiErrorValidator } from '@src/middlewares/api-error-validator';
+import { BeachMongoDBRepository } from '@src/repositories/beachMongoDBRepository';
 
 export class SetupServer extends Server {
   constructor(private port = 3000) {
@@ -47,8 +48,12 @@ export class SetupServer extends Server {
   }
 
   private setupControllers(): void {
-    const forecastController = new ForecastController();
-    const beachesController = new BeachesController();
+    const forecastController = new ForecastController(
+      new BeachMongoDBRepository()
+    );
+    const beachesController = new BeachesController(
+      new BeachMongoDBRepository()
+    );
     const usersController = new UsersController();
     this.addControllers([
       forecastController,
